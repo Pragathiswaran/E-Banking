@@ -1,0 +1,15 @@
+[
+    {
+       "name":"Pragathish",
+       "email":"mpragathiswaran@gmail.com",
+       "phone":"1234567890",
+       "address":"Chennai",
+        "account": {
+            "accountNumber": "1234567890",
+            "accountType": "Savings",
+            "balance": 10000,
+            "accountStatus": 1
+        },
+        "crn": "1234567890"
+    }
+]
