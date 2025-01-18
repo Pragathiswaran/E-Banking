@@ -5,9 +5,10 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import axios from 'axios'
 import { useMutation } from 'react-query'
+import Cookie from 'js-cookie'
 
 const LoginSchema = z.object({
-    crn: z.string().max(10, {message: 'Invalid crn address'}),
+    crn: z.string().max(10, {message: 'Invalid crn address'}).min(10, {message: 'Please Enter CRN address'}),
     password: z.string().min(8, {message: 'Password must be at least 8 characters long'}),
 })
 const Login = () => {
@@ -34,36 +35,41 @@ const Login = () => {
 
     const mutation = useMutation({
         mutationFn: loginHandler,
-        onSuccess: () => {
+        onSuccess: (data) => {
             console.log('success')
             alert('Login Successfull')
+            console.log(data)
+            // Cookie.set('phone', data.data.phone)
+            Navigate('/')
         }, 
         onError: (error) => {
             console.log(error)
-            alert('Invalid Credentials')
+            setError('crn', {message: 'Invalid Credentials'})
+            // alert('Invalid Credentials')`
         }
     })
 
     const onSubmit = (data) => {
-        mutation.mutate(data);
         console.log(data)
+        mutation.mutate(data);
+        
     }
   return (
-    <div className='max-w-md mx-auto mt-40 p-6 bg-white rounded-lg shadow-md'>
-        <h1 className='text-2xl font-semibold text-center mb-6'>Login</h1>
+    <div className='max-w-sm mx-auto mt-40 p-6 bg-white rounded-lg shadow-md'>
+        <h1 className='text-2xl font-bold text-center mb-8'>Login</h1>
         <form onSubmit={handleSubmit(onSubmit)} className=''>
         <div className='mb-4'>
-            <label htmlFor="crn" className='block text-sm font-medium text-gray-700'>crn</label>
-            <input type="crn" id="crn" className='mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" '{...register('crn')}/>
+            <label htmlFor="crn" className='block text-sm font-medium text-gray-700'>Enter Your CRN</label>
+            <input type="crn" id="crn" className='mt-1 block w-full p-2 border border-gray-300  focus:border-gray-400 focus:outline-none' {...register('crn')}/>
              {errors.crn && <p className="text-red-500 text-sm mt-1">{errors.crn.message}</p>}
         </div>
         <div className='mb-4'>
-            <label htmlFor="password" className='block text-sm font-medium text-gray-700'>password</label>
-            <input type="password" id="password" className='mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" ' {...register('password')}/>
+            <label htmlFor="password" className='block text-sm font-medium text-gray-700'>Password</label>
+            <input type="password" id="password" className='mt-1 block w-full p-2 border border-gray-300 focus:border-gray-400 focus:outline-none' {...register('password')}/>
             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
         </div>
         <div className='mt-3'>
-            <button type="submit" className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-indigo-700" disabled={mutation.isLoading}>
+            <button type="submit" className="w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700" disabled={mutation.isLoading}>
                 {mutation.isLoading ? 'Submitting...' : 'Login'}
             </button>
         </div>
