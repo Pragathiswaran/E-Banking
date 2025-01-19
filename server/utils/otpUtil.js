@@ -2,50 +2,41 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilio = require("twilio");
 const client = twilio(accountSid, authToken)
-const { generateOTP } = require("otp-agent");
-// const { default: V2 } = require("twilio/lib/rest/chat/V2");
-
-const generateOtp = () => {
-    return generateOTP({ length: 4, numbers: true });
-}
-
-// const sendOtp = async (phone) => {
-
-//     try {
-//         const otp = generateOtp();
-//         const message = await client.messages.create({
-//             body: `Your OTP is ${otp}`,
-//             messagingServiceSid: process.env.TWILIO_VERIFICATION_SERVICE_ID,
-//             to: phone,
-//         });
-
-//         console.log("Message Sent: ", message.sid);
-//         return { message: "OTP sent successfully" }; 
-//     } catch (err) {
-//         console.error("Error Sending OTP: ", err);
-//         throw err; 
-//     }
-// }   
 
 const sendOtp =  async (phoneNumber) => {
     try {
+
+        if(!phoneNumber){
+            return { message: "Phone number is required", status: 400};
+        }
+
         const verification = await client.verify
             .v2.services(process.env.TWILIO_VERIFICATION_SERVICE_ID)
             .verifications.create({
                 to: phoneNumber,
-                channel: 'sms', // 'sms' for text, 'call' for voice
-                locale: 'en',   // Language of the message
+                channel: 'sms', 
+                locale: 'en', 
             });
 
+        if(verification.status === 'pending') {
             console.log(verification)
-        console.log(`OTP sent to ${phoneNumber}. Status: ${verification.status}`);
+            console.log(`OTP sent to ${phoneNumber}. Status: ${verification.status}`);
+            return { success:true ,message: "OTP sent successfully", status: verification.status};
+        }
+            
     } catch (error) {
         console.error(`Failed to send OTP: ${error.message}`);
+        return { error:true, message: `Failed to send OTP: ${error}`, status: 400};
     }
 }
 
 const verifyingOtp = async (phoneNumber, code) => {
     try {
+
+        if(!phoneNumber || !code){
+            return { message: "Phone number is required", status: 400};
+        }
+
         const verificationCheck = await client.verify
             .v2.services(process.env.TWILIO_VERIFICATION_SERVICE_ID)
             .verificationChecks.create({
@@ -53,15 +44,17 @@ const verifyingOtp = async (phoneNumber, code) => {
                 code: code, 
             });
 
+        console.log(verificationCheck)
         if (verificationCheck.status === 'approved') {
             console.log('OTP verified successfully!');
-            return { message: "OTP verified successfully", status: 200};
+            return {success: true, message: "OTP verified successfully", status: 200 };
         } else {
             console.log(`Verification failed. Status: ${verificationCheck.status}`);
-            return { message: "Verification failed",  status: 400 };
+            return { success: false, message: "Verification failed",  status: 400 };
         }
     } catch (error) {
         console.error(`Failed to verify OTP: ${error.message}`);
+        return { error: true, message: "Failed to verify OTP", status: 400};
     }
 };
 

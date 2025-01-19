@@ -12,7 +12,7 @@ const loginUser = async (req, res) => {
         }
 
         const User = await userModel.findOne({crn: crn});
-        console.log(User)
+        
         if(!User){
             return res.status(400).json({message: "crn not found"});
         }
@@ -21,11 +21,20 @@ const loginUser = async (req, res) => {
             return res.status(400).json({message: "Password is incorrect"});
         }
 
-        const sendOtpResponse = await sendOtp(User.phone);
-        console.log(sendOtpResponse);
-        // if(!sendOtpResponse){ 
-        //     return res.status(400).json({message: "Failed to send OTP"});
+        // const sendOtpResponse = await sendOtp(User.phone);
+       
+        // console.log(sendOtpResponse);
+        // if(sendOtpResponse.status === 400){ 
+        //     return res.status(400).json({message: sendOtpResponse.message, error: sendOtpResponse.error});
         // }
+
+        // if(sendOtpResponse.error){
+        //     return res.status(400).json({message: sendOtpResponse.message, error: sendOtpResponse.error});
+        // }
+
+        const token = jwt.sign({data: User._id}, process.env.JWT_SECRET);
+        console.log(token);
+        res.cookie('token', token, { maxAge: 3600000});
 
         return res.status(200).json({message: "Login Successfull"});
         
@@ -39,13 +48,33 @@ const verifyOtp = async (req, res) => {
    try {
     const {otp, phone} = req.body;
 
-    const response = await verifyingOtp(phone, otp);
-    console.log(response);
-    if(!response){
-        return res.status(400).json({message: "Failed to verify OTP"});
+    if(!otp || !phone){
+        return res.status(400).json({message: "All input is required"});
     }
 
-    res.status(200).json({message: "OTP verified successfully"});
+    const response = await verifyingOtp(phone, otp);
+    console.log(response);
+
+    if(response.success === false){
+        return res.status(400).json({message: "Enter the correct OTP"});
+    }
+
+    if(response.error === true){
+        return res.status(400).json({message: response.message});
+    }
+
+    const getUser = await userModel.findOne({phone: phone});
+    console.log(getUser);
+    if(!getUser){
+        return res.status(400).json({message: "User not found"});
+    }
+
+    const token = jwt.sign({data: getUser._id}, process.env.JWT_SECRET);
+    
+    res.cookie('token', token, {
+       maxAge: 3600,
+    })
+    return res.status(200).json({message: "OTP verified successfully"});
     
    } catch (error) {
        console.log(error);
@@ -53,9 +82,5 @@ const verifyOtp = async (req, res) => {
     
    }
 };
-
-// Call the function with the phone number and OTP code provided by the user
-
-
 
 module.exports = { loginUser, verifyOtp }
