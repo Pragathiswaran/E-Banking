@@ -1,13 +1,14 @@
 import React from 'react'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-
+import { useForm } from 'react-hook-form';
+import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 
 const TransferSchema = z.object({
     amount: z.number().max(10000, { message: 'Amount should be less than 10000' }).min(1, { message: 'Amount should be greater than 1' })   ,
     accountNumber: z.string().min(10, { message: 'Account number should be 10 digits' }).max(10, { message: 'Account number should be 10 digits' }),
-    ifsc: z.string().min(8, { message: 'IFSC code should be 8 characters' }).max(8, { message: 'IFSC code should be 11 characters' }) // updated validation
+    ifsc: z.string().min(10, { message: 'IFSC code should be 8 characters' }).max(10, { message: 'IFSC code should be 10 characters' }) // updated validation
 })  
 
 const Transfer = () => {
@@ -16,7 +17,32 @@ const Transfer = () => {
         resolver: zodResolver(TransferSchema)
     })
 
+    const transferMoney = async (data) => {
+        const reponse = await axios.post('http://localhost:8000/api/user/transfer', {
+            amount: data.amount,
+            receiverAccount: data.accountNumber,
+            receiverIfsc: data.ifsc
+        })
+
+        console.log(reponse)
+        return reponse
+    }
+
+    const muataion = useMutation({
+        mutationKey: ['transfer'],
+        mutationFn: transferMoney,
+        onError: (error) => {
+            console.log(error)
+            alert(error.response.data.message)
+        },
+        onSuccess: (data) => {
+            console.log(data)
+            alert('Money transfered successfully')
+        }
+    })
+
     const onSubmit = (data) => {
+        muataion.mutate(data)
         console.log(data)
     }
 

@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, Outlet } from 'react-router-dom';
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (!token) {
+      navigate('/login');
+    }
+  }, []); 
   return (
     <div className="flex mt-14">
       {/* Sidebar */}

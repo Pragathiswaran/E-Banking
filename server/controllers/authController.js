@@ -33,6 +33,7 @@ const loginUser = async (req, res) => {
         // }
 
         const token = jwt.sign({data: User._id}, process.env.JWT_SECRET);
+        console.log(token);
         res.cookie('token', token, { maxAge: 3600000});
 
         return res.status(200).json({message: "Login Successfull"});

@@ -9,6 +9,7 @@ import Statement from './pages/Statement';
 import axios from 'axios';
 import Transfer from './pages/Transfer';
 import ProtectedRouteClinet from './components/ProtectedRouteClinet';
+import Dashboard from './pages/Dashboard';
 
 axios.defaults.withCredentials = true;
 
@@ -20,7 +21,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/login/verify" element={<VerifyOtp />} />
         <Route path="/" element={<ProtectedRouteClinet> <Home /> </ProtectedRouteClinet>}>
-          <Route index element={<div className="mt-32">Welcome to the Dashboard</div>} />
+          <Route index element={<Dashboard />} />
           <Route path="account" element={<Account />} />
           <Route path="statement" element={<Statement />} />
           <Route path="transfer" element={<Transfer />} />

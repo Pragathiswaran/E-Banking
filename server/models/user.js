@@ -50,6 +50,8 @@ const userSchema = new mongoose.Schema({
             transactionId: String,
             transactionAmount: Number,
             transactionDate: String,
+            transactionTime: String,
+            transactionType: String
         }],
         default: []
     }
